@@ -71,7 +71,7 @@ house_dist = GeneralizedExtremeValue(gauge_dist.μ - offset, gauge_dist.σ, gaug
 samples = rand(house_dist, 100_000) .* 1u"ft"
 damages = damage_fn.(samples)
 expected_damages_pct = mean(damages)
-c_dmg = house_value * expected_damages_pct / 100
+expected_damages_usd = house_value * expected_damages_pct / 100
 
     # calculate the cost of elevating
 elevation_cost = get_elevation_cost_function() 
@@ -87,6 +87,7 @@ end
 function npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
     # calculate the costs and benefits for each year, and then discount
     # see above!
+    npv = sum([expected_damages_usd * (1 - discount_rate)^(i - 1) for i in 1:10])
     return npv
 end
 
