@@ -53,7 +53,7 @@ include("depthdamage.jl")
 # Depth damage function
 ```{julia}
 haz_fl_dept = CSV.read("data/haz_fl_dept.csv", DataFrame) # read in the file
-desc = "one story, Contents, fresh water, short duration"
+desc = "two story, no basement, Structure"
 row = @rsubset(haz_fl_dept, :Description == desc)[1, :] # select the row I want
 dd = DepthDamageData(row) # extract the depth-damage data
 damage_fn = get_depth_damage_function(dd.depths, dd.damages) # get the depth-damage function
@@ -65,16 +65,15 @@ damage_fn = get_depth_damage_function(dd.depths, dd.damages) # get the depth-dam
 function single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh)
     
     # calculate the expected damages
-gauge_dist = GeneralizedExtremeValue(5, 1, 0.1) 
-offset = 1.66 
-house_dist = GeneralizedExtremeValue(gauge_dist.μ - offset, gauge_dist.σ, gauge_dist.ξ)
+house_dist = GeneralizedExtremeValue(flood_dist.μ - offset, gauge_dist.σ, gauge_dist.ξ)
 samples = rand(house_dist, 100_000) .* 1u"ft"
 damages = damage_fn.(samples)
 expected_damages_pct = mean(damages)
 expected_damages_usd = house_value * expected_damages_pct / 100
+c_dmg = expected_damages_usd
 
     # calculate the cost of elevating
-elevation_cost = get_elevation_cost_function() 
+c_constr = elevation_cost.(Δh, house_area)
 
     # return the total cost and benefit
     return -c_constr - c_dmg
@@ -87,7 +86,8 @@ end
 function npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh, T, discount_rate)
     # calculate the costs and benefits for each year, and then discount
     # see above!
-    npv = sum([expected_damages_usd * (1 - discount_rate)^(i - 1) for i in 1:10])
+    single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, Δh)
+    npv = sum([expected_damages_usd * (1 - discount_rate)^(i - 1) for i in 1:T])
     return npv
 end
 
@@ -96,6 +96,10 @@ end
 
 # One SOW, several actions
 ```{julia}
+gauge_dist = GeneralizedExtremeValue(5, 1, 0.1) 
+offset = 1.66 
+elevation_cost = get_elevation_cost_function() 
+
 
 ```
 
