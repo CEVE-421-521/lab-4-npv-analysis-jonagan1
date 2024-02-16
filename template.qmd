@@ -63,7 +63,6 @@ damage_fn = get_depth_damage_function(dd.depths, dd.damages) # get the depth-dam
 # Single year function
 ```{julia}
 function single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h)
-
     # calculate the expected damages
 offset = 1.66 
 house_dist = GeneralizedExtremeValue(flood_dist.μ - offset, flood_dist.σ, flood_dist.ξ)
@@ -74,6 +73,7 @@ expected_damages_usd = house_value * expected_damages_pct / 100
 c_dmg = expected_damages_usd
 
     # calculate the cost of elevating
+h = h .* 1u"ft"
 c_constr = elevation_cost.(h, house_area)
 
     # return the total cost and benefit
@@ -102,24 +102,24 @@ end
 ```
 
 
+
 # One SOW, several actions
 ```{julia}
 flood_dist = GeneralizedExtremeValue(5, 1, 0.1) 
-
 elevation_cost = get_elevation_cost_function()
 house_area = 1000u"ft^2"
 house_value = 400000
-h = 5u"ft^2"
 T = 10
 discount_rate = 0.05
+h = 5
 
-single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h) 
+npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate)
 ```
 
 ```{julia}
 house_area = 1000u"ft^2"
 house_value = 400000
-h = 10u"ft^2"
+h = 10
 T = 10
 discount_rate = 0.05
 npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate) 
@@ -129,26 +129,14 @@ npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value,
 ```{julia}
 house_area = 1000u"ft^2"
 house_value = 400000
-h = 0u"ft^2"
+h = 0
 T = 10
 discount_rate = 0.05
 npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate) 
 ```
 
 # Sensitivity test
-```{julia}
-house_area = 1000u"ft^2"
-house_value = 400000
-h = 0u"ft^2"
-T = 10
-discount_dist = Normal(4,2)
-discount_rate = rand(discount_dist,10000)
-npv_sensitivity = zeros(10000)
-for i in 1:10000
-    npv_sensitivity[i] = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate)
- end
- expected_npv = mean(npv_sensitivity) 
-```
+
 # Discussion
 
 
