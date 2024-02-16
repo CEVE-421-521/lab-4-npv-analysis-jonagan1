@@ -11,24 +11,24 @@ format:
 
     # YOU DO NOT NEED BOTH PDF AND DOCX.
     # COMMENT OR DELETE THE ONE YOU DON'T WANT TO USE.
-    pdf:
-        documentclass: article
-        fontsize: 11pt
-        geometry:
-            - margin=1in  
+    #pdf:
+        #documentclass: article
+       # fontsize: 11pt
+       # geometry:
+           # - margin=1in  
+        #number-sections: true
+       # code-line-numbers: true
+    docx: 
+        toc: true
+        fig-format: png
         number-sections: true
         code-line-numbers: true
-    #docx: 
-    #    toc: true
-    #    fig-format: png
-    #    number-sections: true
-    #    code-line-numbers: true
 
 # these are optional
 # if you have cache=true, you'll need the jupyter-cache package installed
-execute: 
-  cache: true
-  freeze: true
+#execute: 
+  #cache: true
+  #freeze: true
 
 date-format: "ddd., MMM. D"
 bibliography: references.bib
@@ -74,12 +74,10 @@ expected_damages_usd = house_value * expected_damages_pct / 100
 c_dmg = expected_damages_usd
 
     # calculate the cost of elevating
-# elevation_cost = get_elevation_cost_function() # gives us a fitted interpolator
-# some heights we will consider
-c_constr = elevation_cost.(heights, house_area)
+c_constr = elevation_cost.(h, house_area)
 
     # return the total cost and benefit
-    return .-c_constr - c_dmg
+    return -c_constr - c_dmg
 end
 
 ```
@@ -115,8 +113,7 @@ h = 5u"ft^2"
 T = 10
 discount_rate = 0.05
 
-npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate)
-
+single_year_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h) 
 ```
 
 ```{julia}
@@ -125,15 +122,17 @@ house_value = 400000
 h = 10u"ft^2"
 T = 10
 discount_rate = 0.05
-npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate)
+npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate) 
 ```
+
+
 ```{julia}
 house_area = 1000u"ft^2"
 house_value = 400000
 h = 0u"ft^2"
 T = 10
 discount_rate = 0.05
-npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate)
+npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate) 
 ```
 
 # Sensitivity test
@@ -148,11 +147,8 @@ npv_sensitivity = zeros(10000)
 for i in 1:10000
     npv_sensitivity[i] = npv_cost_benefit(flood_dist, damage_fn, elevation_cost, house_area, house_value, h, T, discount_rate)
  end
- expected_npv = mean(npv_sensitivity)
-
-
+ expected_npv = mean(npv_sensitivity) 
 ```
-
 # Discussion
-`
-```
+
+
